@@ -1,14 +1,15 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import React from "react";
-import { experimental_useFormStatus as useFormStatus } from "react-dom";
+import { useFormStatus } from "react-dom";
 
 import { Loading } from "@/components/dashboard/loading";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "@/components/ui/toaster";
 import { useUser } from "@clerk/nextjs";
 import { updateWorkspaceName } from "./actions";
+export const dynamic = "force-dynamic";
 type Props = {
   workspace: {
     id: string;
@@ -18,7 +19,6 @@ type Props = {
 };
 
 export const UpdateWorkspaceName: React.FC<Props> = ({ workspace }) => {
-  const { toast } = useToast();
   const { user } = useUser();
   const { pending } = useFormStatus();
 
@@ -27,18 +27,11 @@ export const UpdateWorkspaceName: React.FC<Props> = ({ workspace }) => {
       action={async (formData: FormData) => {
         const res = await updateWorkspaceName(formData);
         if (res.error) {
-          toast({
-            title: "Error",
-            description: res.error.message,
-            variant: "alert",
-          });
+          toast.error(res.error.message);
           return;
         }
-        toast({
-          title: "Success",
-          description: "Workspace name updated",
-        });
 
+        toast.success("Workspace name updated");
         user?.reload();
       }}
     >
@@ -49,9 +42,9 @@ export const UpdateWorkspaceName: React.FC<Props> = ({ workspace }) => {
         <CardContent>
           <div className="flex flex-col space-y-2">
             <input type="hidden" name="workspaceId" value={workspace.id} />
-            <label className="hidden sr-only">Name</label>
+            <label className="sr-only hidden">Name</label>
             <Input name="name" className="max-w-sm" defaultValue={workspace.name} />
-            <p className="text-xs text-content-subtle">What should your workspace be called?</p>
+            <p className="text-content-subtle text-xs">What should your workspace be called?</p>
           </div>
         </CardContent>
         <CardFooter className="justify-end">
